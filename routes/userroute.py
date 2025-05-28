@@ -1,5 +1,6 @@
 from flask import Blueprint,jsonify,request
 from config.config import db_connection
+from query.userquery import CHECK_USER_QUERY,ADD_USER_QUERY,GET_USERS_QUERY
 
 user_bp = Blueprint('user',__name__,url_prefix='/user')
 @user_bp.route('',methods=['POST'])
@@ -18,15 +19,8 @@ def add_user():
             conn = db_connection()
             cursor = conn.cursor()
 
-            # User was added before
-            cursor.execute(""" 
-            SELECT
-                "userName"
-            FROM
-                "tbUser"
-            WHERE
-                "userName" = %s
-            """,(user_name,))
+            # Check User
+            cursor.execute(CHECK_USER_QUERY,(user_name,))
             result = cursor.fetchone()
             if result is not None:
                 check_user = result[0]
@@ -34,19 +28,7 @@ def add_user():
                     return jsonify({"Hata": "Kullanıcı Daha Önce Eklenmiş"}),401
                 
             else:
-                cursor.execute(""" 
-                INSERT INTO
-                    "tbUser"
-                    ("userName", "userPassword", "_userRoleId")
-                VALUES
-                    (%s, %s,
-                    (SELECT
-                        "userRoleId"
-                    FROM
-                        "tbUserRole"
-                    WHERE
-                        "userRoleName"= %s))
-                """,(user_name,user_password,user_role,))
+                cursor.execute(ADD_USER_QUERY,(user_name,user_password,user_role,))
                 conn.commit()
                 return jsonify({"Bilgi":"Kullanıcı Başarıyla Eklendi"}),200
                 
@@ -63,18 +45,7 @@ def get_user():
     try:
         conn = db_connection()
         cursor = conn.cursor()
-        cursor.execute(""" 
-        SELECT
-            ur."userRoleName",
-            u."userName"
-        FROM
-            "tbUser" u
-        INNER JOIN
-            "tbUserRole" ur
-        ON
-            u."_userRoleId" = ur."userRoleId"
-            
-        """)
+        cursor.execute(GET_USERS_QUERY)
         rows = cursor.fetchall()
         user_list = []
         for row in rows:

@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from config.config import db_connection
+from query.employeequery import CHECK_QUERY_EMPLOYEE,ADD_QUERY_EMPLOYEE,GET_QUERY_ALL_EMPLOYEES
 
 employee_bp = Blueprint('employee',__name__,url_prefix='/employee')
 
@@ -25,35 +26,13 @@ def add_employee():
             cursor = conn.cursor()
             
             # Check if employee was added before
-            cursor.execute(""" 
-            SELECT
-                "employeeName"
-            FROM 
-                "tbEmployee"
-            WHERE
-                "employeeName" = %s
-
-            """,(employee_name,))
+            cursor.execute(CHECK_QUERY_EMPLOYEE,(employee_name,))
             result = cursor.fetchone()
             if result:
                 check_employee = result[0]
                 return jsonify({"Hata":f"Müşteri Daha Önce Ekleniştir: {str(check_employee)}"})
             else:
-                cursor.execute(""" 
-                INSERT INTO
-                    "tbEmployee"
-                    ("employeeName", "employeePhone", "employeePhone2",
-                        "employeeAuthority", "employeeAuthorityPhone", "employeeAuthorityPhone2",
-                        "employeeAdress", "_userId")
-                VALUES
-                    (%s, %s, %s, %s, %s, %s, %s,
-                (SELECT 
-                    "userId"
-                FROM
-                    "tbUser"
-                WHERE
-                    "userName" = %s))
-                """,(employee_name,employee_phone,employee_phone2,employee_authority,
+                cursor.execute(ADD_QUERY_EMPLOYEE,(employee_name,employee_phone,employee_phone2,employee_authority,
                      employee_authority_phone,employee_authority_phone2,
                      employee_adress,username))
                 conn.commit()
@@ -70,23 +49,7 @@ def get_employees():
     try:
         conn = db_connection()
         cursor = conn.cursor()
-        cursor.execute(""" 
-        SELECT
-            e."employeeName",
-            e."employeePhone",
-            e."employeePhone2",
-            e."employeeAuthority",
-            e."employeeAuthorityPhone",
-            e."employeeAuthorityPhone2",
-            e."employeeAdress",
-            u."userName" 
-        FROM
-            "tbEmployee" e
-        INNER JOIN
-            "tbUser" u
-        ON
-            e."_userId" = u."userId"               
-        """)
+        cursor.execute(GET_QUERY_ALL_EMPLOYEES)
         rows = cursor.fetchall()
         employee_list = []
         for row in rows:

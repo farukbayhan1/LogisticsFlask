@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from config.config import db_connection
+from query.vehiclequery import CHECK_VEHICLE_QUERY,ADD_VEHICLE_QUERY,GET_VEHICLE_QUERY
 
 vehicle_bp = Blueprint('vehicle',__name__,url_prefix='/vehicle')
 
@@ -24,35 +25,14 @@ def add_vehicle():
             cursor = conn.cursor()
             
             # Check if vehicle was already exists
-            cursor.execute(""" 
-            SELECT
-                "vehicleNumberPlate"
-            FROM
-                "tbVehicle"
-            WHERE
-                "vehicleNumberPlate" = %s
-            """,(vehicle_number_plate,))
+            cursor.execute(CHECK_VEHICLE_QUERY,(vehicle_number_plate,))
             result = cursor.fetchone()
 
             if result is not None:
                 check_vehicle_number_plate = result[0]
                 return jsonify({"Hata":f"Bu Plaka Daha Önce Eklenmiştir: {str(check_vehicle_number_plate)}"})
             else:
-                cursor.execute(""" 
-                INSERT INTO
-                    "tbVehicle"
-                    ("vehicleNumberPlate", "vehicleBrand", "vehicleModel",
-                               "vehicleModelYear", "vehicleType", "vehicleLoadCapacity",
-                               "_userId")
-                VALUES
-                    (%s, %s, %s, %s, %s, %s,
-                    (SELECT
-                        "userId"
-                    FROM
-                        "tbUser"
-                    WHERE
-                        "userName" = %s))
-                """,(vehicle_number_plate,vehicle_brand,vehicle_model,vehicle_model_year,
+                cursor.execute(ADD_VEHICLE_QUERY,(vehicle_number_plate,vehicle_brand,vehicle_model,vehicle_model_year,
                      vehicle_type,vehicle_load_capacity,username))
                 conn.commit()
                 return jsonify({"Bilgi":"Araç Ekleme İşlemi Başarıyla Tamamlandı"})
@@ -67,22 +47,7 @@ def get_vehicles():
     try:
         conn = db_connection()
         cursor = conn.cursor()
-        cursor.execute(""" 
-        SELECT
-            v."vehicleNumberPlate",
-            v."vehicleBrand",
-            v."vehicleModel",
-            v."vehicleModelYear",
-            v."vehicleType",
-            v."vehicleLoadCapacity",
-            u."userName"
-        FROM
-            "tbVehicle" v
-        INNER JOIN
-            "tbUser" u
-        ON
-            v."_userId" = u."userId"
-        """)
+        cursor.execute(GET_VEHICLE_QUERY)
         rows = cursor.fetchall()
         vehicle_list = []
         for row in rows:

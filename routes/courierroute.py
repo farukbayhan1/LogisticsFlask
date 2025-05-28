@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from config.config import db_connection
+from query.courierquery import CHECK_QUERY_COURIER, ADD_QUERY_COURIER, GET_QUERY_ALL_COURIERS
 
 couerier_bp = Blueprint('courier',__name__,url_prefix='/courier')
 
@@ -21,37 +22,17 @@ def add_courier():
             conn = db_connection()
             cursor = conn.cursor()
 
-            # Courier was added before
-            cursor.execute(""" 
-            SELECT
-                "courierTcNo"
-            FROM
-                "tbCourier"
-            WHERE
-                "courierTcNo" = %s
-            """,(courier_tc_no,))
+            # Courier Exists
+            cursor.execute(CHECK_QUERY_COURIER,(courier_tc_no,))
             result = cursor.fetchone()
+            
+            # Courier Add
             if result is not None:
-                check_courier = result[0]
                 return jsonify({"Hata":"Kurye Daha Önce Eklenmiştir"}),401
             else:
-                cursor.execute(""" 
-                INSERT INTO
-                    "tbCourier"
-                    ("courierTcNo", "courierName", "courierSurname", "courierPhone", "courierAdress", "_userId")
-                VALUES
-                    (%s,%s,%s,%s,%s,
-                    (SELECT
-                        "userId"
-                    FROM
-                        "tbUser"
-                    WHERE
-                        "userName" = %s))
-
-                """,(courier_tc_no,courier_name,courier_surname,courier_phone,courier_adress,username))
+                cursor.execute(ADD_QUERY_COURIER,(courier_tc_no, courier_name, courier_surname, courier_phone, courier_adress, username))
                 conn.commit()
-                return jsonify({"Bilgi":"Kurye Ekleme İşlemi Başarılı"}),200
-            
+                return jsonify({"Bilgi":"Kurye Ekleme İşlemi Başarılı"})
         except Exception as e:
             return jsonify({"Hata": f"Sunucu Hatası {str(e)}"})
     
@@ -62,21 +43,8 @@ def get_couriers():
     try:
         conn = db_connection()
         cursor = conn.cursor()
-        cursor.execute(""" 
-        SELECT
-            cr."courierTcNo",
-            cr."courierName",
-            cr."courierSurname",
-            cr."courierPhone",
-            cr."courierAdress",
-            u."userName"
-        FROM
-            "tbCourier" cr
-        INNER JOIN
-            "tbUser" u
-        ON
-            cr."_userId" = u."userId"
-        """)
+        cursor.execute(GET_QUERY_ALL_COURIERS)
+        
         rows = cursor.fetchall()
         courier_list = []
         for row in rows:

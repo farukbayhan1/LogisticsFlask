@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
-from config.config import db_connection 
+from config.config import db_connection
+from query.driverquery import CHECK_QUERY_DRIVER, ADD_QUERY_DRIVER, GET_QUERY_ALL_DRIVERS
 
 driver_bp = Blueprint('driver',__name__,url_prefix='/driver')
 
@@ -22,65 +23,29 @@ def add_driver():
         try:
             conn = db_connection()
             cursor = conn.cursor()
+            
             # Check if driver already exists
-            cursor.execute(""" 
-            SELECT
-                "driverTcNo"
-            FROM
-                "tbDriver"
-            WHERE
-                "driverTcNo" = %s
-            """, (driver_tc_no,))
+            cursor.execute(CHECK_QUERY_DRIVER,(driver_tc_no,))
             result = cursor.fetchone()
             if result is not None:
-               check_tc = result[0]
                return jsonify({"Hata":f"Sürücü Daha Önce Eklenmiştir"})
             else:
-                cursor.execute(""" 
-                INSERT INTO
-                    "tbDriver"
-                    ("driverTcNo", "driverName", "driverSurname","driverPhone","driverAdress","_userId")
-                VALUES
-                    (%s, %s, %s, %s, %s,
-                (SELECT
-                    "userId"
-                FROM
-                    "tbUser"
-                WHERE
-                    "userName" = %s)
-                )
-                """,(driver_tc_no,driver_name,driver_surname,driver_phone,driver_adress,username))
+                cursor.execute(ADD_QUERY_DRIVER,(driver_tc_no,driver_name,driver_surname,driver_phone,driver_adress,username))
                 conn.commit()
                 return jsonify({"Bilgi":"Sürücü Başarıyla Eklendi"})
-            
-
-
         except Exception as e:
             return jsonify({"Hata": f"Sunucu Hatası {str(e)}"}), 500
         finally:
             if conn:
                 conn.close() 
+
 @driver_bp.route('', methods=['GET'])
 def get_drivers():
     conn = None
     try:
         conn = db_connection()
         cursor = conn.cursor()
-        cursor.execute(""" 
-        SELECT
-            dr."driverTcNo",
-            dr."driverName",
-            dr."driverSurname",
-            dr."driverPhone",
-            dr."driverAdress",
-            u."userName"
-        FROM
-            "tbDriver" dr
-        INNER JOIN
-            "tbUser" u
-        ON
-            dr."_userId" = u."userId"
-        """) 
+        cursor.execute(GET_QUERY_ALL_DRIVERS) 
         rows = cursor.fetchall()
         driver_list = []
         for row in rows:
