@@ -12,9 +12,8 @@ CHECK_QUERY_EMPLOYEE = ("""
 ADD_QUERY_EMPLOYEE = (""" 
         INSERT INTO
             "tbEmployee"
-            ("employeeName", "employeePhone", "employeePhone2",
-                "employeeAuthority", "employeeAuthorityPhone", "employeeAuthorityPhone2",
-                "employeeAdress", "_userId")
+            ("employeeName", "employeePhone", "employeePhone2","employeeAuthority", "employeeAuthorityPhone", "employeeAuthorityPhone2",
+            "employeeAdress", "_userId")
         VALUES
             (%s, %s, %s, %s, %s, %s, %s,
         (SELECT 
@@ -22,8 +21,7 @@ ADD_QUERY_EMPLOYEE = ("""
         FROM
             "tbUser"
         WHERE
-            "userName" = %s
-
+            "userName" = %s))
 """)
 
 GET_QUERY_ALL_EMPLOYEES = (""" 
@@ -42,5 +40,4 @@ GET_QUERY_ALL_EMPLOYEES = ("""
             "tbUser" u
         ON
             e."_userId" = u."userId" 
-
 """)

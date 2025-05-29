@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
-from config.config import db_connection
-from query.employeequery import CHECK_QUERY_EMPLOYEE,ADD_QUERY_EMPLOYEE,GET_QUERY_ALL_EMPLOYEES
+from dbmanager.query.employeequery import CHECK_QUERY_EMPLOYEE,ADD_QUERY_EMPLOYEE,GET_QUERY_ALL_EMPLOYEES
+from dbmanager.excutequery import execute_query
 
 employee_bp = Blueprint('employee',__name__,url_prefix='/employee')
 
@@ -18,39 +18,28 @@ def add_employee():
 
     # Check Employee
     if not employee_name:
-        return jsonify({"Hata":"Müşteri Ünvanı Boş Olamaz"})
+        return jsonify({"Hata":"Müşteri Ünvanı Boş Olamaz"}),400
     else:
-        conn = None
         try:
-            conn = db_connection()
-            cursor = conn.cursor()
-            
             # Check if employee was added before
-            cursor.execute(CHECK_QUERY_EMPLOYEE,(employee_name,))
-            result = cursor.fetchone()
+            result = execute_query(CHECK_QUERY_EMPLOYEE,(employee_name,),fetchone=True)
             if result:
-                check_employee = result[0]
-                return jsonify({"Hata":f"Müşteri Daha Önce Ekleniştir: {str(check_employee)}"})
+                return jsonify({"Hata":f"Müşteri Daha Önce Eklenmiştir"}),400
+            
+            # Add Employee
             else:
-                cursor.execute(ADD_QUERY_EMPLOYEE,(employee_name,employee_phone,employee_phone2,employee_authority,
+                execute_query(ADD_QUERY_EMPLOYEE,(employee_name,employee_phone,employee_phone2,employee_authority,
                      employee_authority_phone,employee_authority_phone2,
-                     employee_adress,username))
-                conn.commit()
-                return jsonify({"Bilgi":"MÜşteri Ekleme İşlemi Başarılı"})
+                     employee_adress,username),commit=True)
+                return jsonify({"Bilgi":"Müşteri Ekleme İşlemi Başarılı"}),201
             
         except Exception as e:
-            return jsonify({"Hata:"f"Sunucu Hatası: f{str(e)}"})
-        finally:
-            if conn:
-                conn.close()
+            return jsonify({"Hata:"f"Sunucu Hatası: f{str(e)}"}),500
+    
 @employee_bp.route('',methods=['GET'])
 def get_employees():
-    conn = None
     try:
-        conn = db_connection()
-        cursor = conn.cursor()
-        cursor.execute(GET_QUERY_ALL_EMPLOYEES)
-        rows = cursor.fetchall()
+        rows = execute_query(GET_QUERY_ALL_EMPLOYEES,fetchall=True)
         employee_list = []
         for row in rows:
             employee_list.append({
@@ -63,7 +52,7 @@ def get_employees():
                 "employeeAdress":row[6],
                 "userName":row[7]
             })
-        return jsonify(employee_list)
+        return jsonify(employee_list),200
 
     except Exception as e:
-        return jsonify({"Hata":f"Sunucu Hatası: {str(e)}"})
+        return jsonify({"Hata":f"Sunucu Hatası: {str(e)}"}),500

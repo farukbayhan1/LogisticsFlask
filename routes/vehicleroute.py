@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
-from config.config import db_connection
-from query.vehiclequery import CHECK_VEHICLE_QUERY,ADD_VEHICLE_QUERY,GET_VEHICLE_QUERY
+from dbmanager.query.vehiclequery import CHECK_VEHICLE_QUERY,ADD_VEHICLE_QUERY,GET_VEHICLE_QUERY
+from dbmanager.excutequery import execute_query
 
 vehicle_bp = Blueprint('vehicle',__name__,url_prefix='/vehicle')
 
@@ -19,36 +19,25 @@ def add_vehicle():
     if not vehicle_number_plate or not vehicle_brand:
         return jsonify({"Hata": "Araç Plakası ve Markası Boş Olamaz"})
     else:
-        conn = None
         try:
-            conn = db_connection()
-            cursor = conn.cursor()
+            
             
             # Check if vehicle was already exists
-            cursor.execute(CHECK_VEHICLE_QUERY,(vehicle_number_plate,))
-            result = cursor.fetchone()
-
+            result = execute_query(CHECK_VEHICLE_QUERY,(vehicle_number_plate,),fetchone=True)
             if result is not None:
-                check_vehicle_number_plate = result[0]
-                return jsonify({"Hata":f"Bu Plaka Daha Önce Eklenmiştir: {str(check_vehicle_number_plate)}"})
+                return jsonify({"Hata":f"Bu Plaka Daha Önce Eklenmiştir"}), 400
             else:
-                cursor.execute(ADD_VEHICLE_QUERY,(vehicle_number_plate,vehicle_brand,vehicle_model,vehicle_model_year,
-                     vehicle_type,vehicle_load_capacity,username))
-                conn.commit()
-                return jsonify({"Bilgi":"Araç Ekleme İşlemi Başarıyla Tamamlandı"})
+                execute_query(ADD_VEHICLE_QUERY,(vehicle_number_plate,vehicle_brand,vehicle_model,vehicle_model_year,
+                     vehicle_type,vehicle_load_capacity,username),commit=True)
+                return jsonify({"Bilgi":"Araç Ekleme İşlemi Başarıyla Tamamlandı"}),201
         except Exception as e:
             return jsonify({"Hata":f"Sunucu Hatası: {str(e)}"})
-        finally:
-            if conn:
-                conn.close()
+        
 @vehicle_bp.route('',methods=['GET'])
 def get_vehicles():
-    conn = None
+    
     try:
-        conn = db_connection()
-        cursor = conn.cursor()
-        cursor.execute(GET_VEHICLE_QUERY)
-        rows = cursor.fetchall()
+        rows = execute_query(GET_VEHICLE_QUERY,fetchall=True)
         vehicle_list = []
         for row in rows:
             vehicle_list.append({
@@ -60,6 +49,6 @@ def get_vehicles():
                 "vehicleLoadCapacity":row[5],
                 "userName":row[6]
             })
-        return jsonify(vehicle_list)
+        return jsonify(vehicle_list), 200
     except Exception as e:
-        return jsonify({"Hata": f"Sunucu Hatası: {str(e)}"})
+        return jsonify({"Hata": f"Sunucu Hatası: {str(e)}"}),500

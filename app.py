@@ -5,6 +5,8 @@ from routes.driverroute import driver_bp
 from routes.courierroute import couerier_bp
 from routes.employeeroute import employee_bp
 from routes.vehicleroute import vehicle_bp
+from routes.triproutes import trip_bp
+
 
 
 app = Flask(__name__)
@@ -14,5 +16,9 @@ app.register_blueprint(driver_bp)
 app.register_blueprint(couerier_bp)
 app.register_blueprint(employee_bp)
 app.register_blueprint(vehicle_bp)
+app.register_blueprint(trip_bp)
+
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0',debug=True)

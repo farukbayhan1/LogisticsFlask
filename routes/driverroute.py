@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
-from config.config import db_connection
-from query.driverquery import CHECK_QUERY_DRIVER, ADD_QUERY_DRIVER, GET_QUERY_ALL_DRIVERS
+from dbmanager.query.driverquery import CHECK_QUERY_DRIVER, ADD_QUERY_DRIVER, GET_QUERY_ALL_DRIVERS
+from dbmanager.excutequery import execute_query
 
 driver_bp = Blueprint('driver',__name__,url_prefix='/driver')
 
@@ -14,39 +14,30 @@ def add_driver():
     driver_adress = data.get("driver_adress")
     username = data.get("username")
 
-
     # Check Data 
     if not driver_tc_no or not driver_name or not driver_surname or not driver_phone:
-        return jsonify({"Hata": "Tc No, Ad, Soyad, Telefon Boş Olamaz"}), 400
+        return jsonify({"Hata": "Tc No, Ad, Soyad, Telefon Boş Olamaz"}), 401
     else:
-        conn = None
         try:
-            conn = db_connection()
-            cursor = conn.cursor()
-            
+
             # Check if driver already exists
-            cursor.execute(CHECK_QUERY_DRIVER,(driver_tc_no,))
-            result = cursor.fetchone()
+            result = execute_query(CHECK_QUERY_DRIVER,params=(driver_tc_no,),fetchone=True)
             if result is not None:
-               return jsonify({"Hata":f"Sürücü Daha Önce Eklenmiştir"})
+               return jsonify({"Hata":f"Sürücü Daha Önce Eklenmiştir"}), 401
+            
+            # Add Driver 
             else:
-                cursor.execute(ADD_QUERY_DRIVER,(driver_tc_no,driver_name,driver_surname,driver_phone,driver_adress,username))
-                conn.commit()
-                return jsonify({"Bilgi":"Sürücü Başarıyla Eklendi"})
+                execute_query(ADD_QUERY_DRIVER,(driver_tc_no,driver_name,driver_surname,driver_phone,driver_adress,username),commit=True)  
+                return jsonify({"Bilgi":"Sürücü Başarıyla Eklendi"}),201
         except Exception as e:
             return jsonify({"Hata": f"Sunucu Hatası {str(e)}"}), 500
-        finally:
-            if conn:
-                conn.close() 
+       
 
 @driver_bp.route('', methods=['GET'])
 def get_drivers():
-    conn = None
+    
     try:
-        conn = db_connection()
-        cursor = conn.cursor()
-        cursor.execute(GET_QUERY_ALL_DRIVERS) 
-        rows = cursor.fetchall()
+        rows = execute_query(GET_QUERY_ALL_DRIVERS,fetchall=True)
         driver_list = []
         for row in rows:
             driver_list.append({
@@ -57,7 +48,6 @@ def get_drivers():
                 "driverAdress":row[4],
                 "userName":row[5]
             })
-        return jsonify(driver_list) 
-    
+        return jsonify(driver_list),200
     except Exception as e:
-        return jsonify({"Hata":f"Sunucu Hatası: {str(e)}"})
+        return jsonify({"Hata":f"Sunucu Hatası: {str(e)}"}), 500
