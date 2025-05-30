@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from dbmanager.query.vehiclequery import CHECK_VEHICLE_QUERY,ADD_VEHICLE_QUERY,GET_VEHICLE_QUERY
+from dbmanager.query.vehiclequery import CHECK_VEHICLE_QUERY,ADD_VEHICLE_QUERY,GET_VEHICLE_QUERY,UPDATE_VEHICLE_QUERY
 from dbmanager.excutequery import execute_query
 
 vehicle_bp = Blueprint('vehicle',__name__,url_prefix='/vehicle')
@@ -40,14 +40,41 @@ def get_vehicles():
         vehicle_list = []
         for row in rows:
             vehicle_list.append({
-                "vehicleNumberPlate":row[0],
-                "vehicleBrand":row[1],
-                "vehicleModel":row[2],
-                "vehicleModelYear":row[3],
-                "vehicleType":row[4],
-                "vehicleLoadCapacity":row[5],
-                "userName":row[6]
+                "vehicleId":row[0],
+                "vehicleNumberPlate":row[1],
+                "vehicleBrand":row[2],
+                "vehicleModel":row[3],
+                "vehicleModelYear":row[4],
+                "vehicleType":row[5],
+                "vehicleLoadCapacity":row[6],
+                "userName":row[7]
             })
         return jsonify(vehicle_list), 200
+    except Exception as e:
+        return jsonify({"Hata": f"Sunucu Hatası: {str(e)}"}),500
+    
+@vehicle_bp.route('',methods=['PUT'])
+def update_vehicle():
+    try:
+        data = request.get_json()
+        required_fields = [
+            "vehicle_id", "vehicle_number_plate", "vehicle_brand",
+            "vehicle_model", "vehicle_model_year", "vehicle_type",
+            "vehicle_load_capacity"
+        ]
+        missing_fields = [field for field in required_fields if not data.get(field)]
+        if missing_fields:
+            return jsonify({"Hata": f"Eksik alanlar: {', '.join(missing_fields)}"}), 400
+        
+        vehicle_id = data.get("vehicle_id")
+        vehicle_number_plate = data.get("vehicle_number_plate")
+        vehicle_brand = data.get("vehicle_brand")
+        vehicle_model = data.get("vehicle_model")
+        vehicle_model_year = data.get("vehicle_model_year")
+        vehicle_type = data.get("vehicle_type")
+        vehicle_load_capacity = data.get("vehicle_load_capacity")
+        execute_query(UPDATE_VEHICLE_QUERY,(vehicle_number_plate,vehicle_brand,vehicle_model,vehicle_model_year,
+                                            vehicle_type, vehicle_load_capacity,vehicle_id),commit=True)
+        return jsonify({"Bilgi": "Araç Güncelleme İşlemi Başarılı"}),201
     except Exception as e:
         return jsonify({"Hata": f"Sunucu Hatası: {str(e)}"}),500

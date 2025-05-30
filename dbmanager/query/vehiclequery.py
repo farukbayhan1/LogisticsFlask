@@ -26,6 +26,7 @@ ADD_VEHICLE_QUERY = ("""
 # Get Vehicle Query
 GET_VEHICLE_QUERY = (""" 
         SELECT
+            v."vehicleId",
             v."vehicleNumberPlate",
             v."vehicleBrand",
             v."vehicleModel",
@@ -39,4 +40,11 @@ GET_VEHICLE_QUERY = ("""
             "tbUser" u
         ON
             v."_userId" = u."userId"
+""")
+
+UPDATE_VEHICLE_QUERY  = (""" 
+        UPDATE "tbVehicle"
+        SET "vehicleNumberPlate" = %s, "vehicleBrand" = %s, "vehicleModel" = %s, "vehicleModelYear" = %s, "vehicleType" = %s,
+            "vehicleLoadCapacity" = %s
+        WHERE "vehicleId" = %s
 """)
