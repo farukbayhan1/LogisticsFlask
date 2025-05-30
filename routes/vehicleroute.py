@@ -19,8 +19,7 @@ def add_vehicle():
     if not vehicle_number_plate or not vehicle_brand:
         return jsonify({"Hata": "Araç Plakası ve Markası Boş Olamaz"})
     else:
-        try:
-            
+        try:   
             
             # Check if vehicle was already exists
             result = execute_query(CHECK_VEHICLE_QUERY,(vehicle_number_plate,),fetchone=True)

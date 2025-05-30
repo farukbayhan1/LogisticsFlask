@@ -18,12 +18,9 @@ ADD_VEHICLE_QUERY = ("""
                         "_userId")
         VALUES
             (%s, %s, %s, %s, %s, %s,
-            (SELECT
-                "userId"
-            FROM
-                "tbUser"
-            WHERE
-                "userName" = %s
+            (SELECT "userId"
+            FROM "tbUser"
+            WHERE "userName" = %s))
 """)
 
 # Get Vehicle Query
