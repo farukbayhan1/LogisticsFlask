@@ -1,20 +1,18 @@
 
 # Create Trip Query
-CREATE_TRIP_QUERY =(""" 
-        INSERT INTO "tbTrips"
-        ("tripLoadingProvince", "tripLoadingDistrict", "tripDestinationProvince", "tripDestinationDistrict",
-        "_vehicleId", "_driverId", "_courierId", "tripStartTime", "_userId", "tripExplanation")
+CREATE_TRIP_QUERY = (""" 
+        INSERT INTO "tbTrip"
+        ("tripCode", "tripLoadingProvince","tripLoadingDistrict","tripDestinationProvince","tripDestinationDistrict",
+        "tripExplanation","tripStartTime","_tripStatusId","_userId","_vehicleId","_courierId","_driverId")
         VALUES
-        (%s, %s, %s, %s,
-        (SELECT "vehicleId" FROM "tbVehicle" WHERE "vehicleNumberPlate" = %s),
-        (SELECT "driverId" FROM "tbDriver" WHERE "driverTcNo" = %s),
-        (SELECT "courierId" FROM "tbCourier" WHERE "courierTcNo" = %s),
-        NOW(),
-        (SELECT "userId" FROM "tbUser" WHERE "userName" = %s),
-        %s)
-        RETURNING "tripId"              
+        (
+        ('SF-'||TO_CHAR(NOW(),'YYMMDDHHMISS')),
+        %s, %s, %s, %s, %s,
+        (SELECT NOW()),
+        %s,
+        (SELECT "userId" FROM "tbUser" WHERE "userName" = %s), 
+        %s, %s, %s)
 """)
-
 # Get Trips Still Opening
 GET_TRIPS_STILL_OPENING = (""" 
         SELECT

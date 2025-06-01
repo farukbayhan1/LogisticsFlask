@@ -42,12 +42,13 @@ def get_couriers():
         courier_list = []
         for row in rows:
             courier_list.append({
-                "courierTcNo":row[0],
-                "courierName":row[1],
-                "courierSurname":row[2],
-                "courierPhone":row[3],
-                "courierAdress":row[4],
-                "userName":row[5]
+                "courierId":row[0],
+                "courierTcNo":row[1],
+                "courierName":row[2],
+                "courierSurname":row[3],
+                "courierPhone":row[4],
+                "courierAdress":row[5],
+                "userName":row[6]
             })
         return jsonify(courier_list),200   
     except Exception as e:

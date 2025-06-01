@@ -41,12 +41,13 @@ def get_drivers():
         driver_list = []
         for row in rows:
             driver_list.append({
-                "driverTcNo":row[0],
-                "driverName":row[1],
-                "driverSurname":row[2],
-                "driverPhone":row[3],
-                "driverAdress":row[4],
-                "userName":row[5]
+                "driverId":row[0],
+                "driverTcNo":row[1],
+                "driverName":row[2],
+                "driverSurname":row[3],
+                "driverPhone":row[4],
+                "driverAdress":row[5],
+                "userName":row[6]
             })
         return jsonify(driver_list),200
     except Exception as e:

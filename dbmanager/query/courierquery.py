@@ -27,6 +27,7 @@ ADD_QUERY_COURIER = ("""
 # Get All Query
 GET_QUERY_ALL_COURIERS = (""" 
         SELECT
+            cr."courierId",
             cr."courierTcNo",
             cr."courierName",
             cr."courierSurname",

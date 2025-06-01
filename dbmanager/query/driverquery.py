@@ -27,6 +27,7 @@ ADD_QUERY_DRIVER = ("""
 # Get All Query
 GET_QUERY_ALL_DRIVERS = ("""
         SELECT
+            dr."driverId",
             dr."driverTcNo",
             dr."driverName",
             dr."driverSurname",
