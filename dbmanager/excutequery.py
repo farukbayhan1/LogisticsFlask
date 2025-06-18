@@ -11,7 +11,7 @@ def execute_query(query, params=(), fetchone=False, fetchall=False, commit=False
             result = cursor.fetchone()
         elif fetchall:
             result = cursor.fetchall()
-        if commit:
+        if commit:  
             conn.commit()
         return result
     except Exception as e:

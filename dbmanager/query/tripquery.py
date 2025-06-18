@@ -29,7 +29,7 @@ GET_TRIPS_STILL_OPENING = ("""
             c."courierName",
             c."courierSurname",
             u."userName"
-        FROM "tbTrips" tr
+        FROM "tbTrip" tr
         INNER JOIN "tbVehicle" v
         ON tr."_vehicleId" = v."vehicleId"
         INNER JOIN "tbDriver" d
@@ -38,13 +38,20 @@ GET_TRIPS_STILL_OPENING = ("""
         ON tr."_courierId" = c."courierId"
         INNER JOIN "tbUser" u
         ON tr."_userId" = u."userId" 
-        WHERE tr."tripEndTime" IS NULL
+        WHERE tr."_tripStatusId" = '1'
         ORDER BY tr."tripStartTime" DESC
 """)
 
-# Update Trip End Time
-UPDATE_TRIP_END_TIME = (""" 
-        UPDATE "tbTrips"
-        SET "tripEndTime" = %s
-        WHERE "tripCode" = %s
+LOAD_ORDER_TO_TRIP = (""" 
+        UPDATE "tbOrder"
+        SET "_tripId" = (SELECT "tripId" FROM "tbTrip" WHERE "tripCode" = %s),
+                      "orderLoadingDate" = (SELECT NOW())
+        WHERE "orderId" = %s
 """)
+
+UPDATE_TRIP_STATUS = (""" 
+        UPDATE "tbTrip"
+        SET "_tripStatusId" = (SELECT "tripStatusId" FROM "tbTripStatus" WHERE "tripStatusName" = 'YÜKLENDİ')
+        WHERE "tripCode" = %s
+""")   
+

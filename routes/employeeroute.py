@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from dbmanager.query.employeequery import CHECK_QUERY_EMPLOYEE,ADD_QUERY_EMPLOYEE,GET_QUERY_ALL_EMPLOYEES
+from dbmanager.query.employeequery import CHECK_QUERY_EMPLOYEE,ADD_QUERY_EMPLOYEE,GET_QUERY_ALL_EMPLOYEES,UPDATE_QUERY_EMPLOYEE
 from dbmanager.excutequery import execute_query
 
 employee_bp = Blueprint('employee',__name__,url_prefix='/employee')
@@ -43,16 +43,37 @@ def get_employees():
         employee_list = []
         for row in rows:
             employee_list.append({
-                "employeeName":row[0],
-                "employeePhone":row[1],
-                "employeePhone2":row[2],
-                "employeeAuthority":row[3],
-                "employeeAuthorityPhone":row[4],
-                "employeeAuthorityPhone2":row[5],
-                "employeeAdress":row[6],
-                "userName":row[7]
+                "employeeId":row[0],
+                "employeeName":row[1],
+                "employeePhone":row[2],
+                "employeePhone2":row[3],
+                "employeeAuthority":row[4],
+                "employeeAuthorityPhone":row[5],
+                "employeeAuthorityPhone2":row[6],
+                "employeeAdress":row[7],
+                "userName":row[8]
             })
         return jsonify(employee_list),200
 
     except Exception as e:
         return jsonify({"Hata":f"Sunucu Hatası: {str(e)}"}),500
+
+@employee_bp.route('',methods=['PUT'])
+def update_employee():
+    data = request.get_json()
+    employee_id = data.get("employee_id")
+    employee_phone = data.get("employee_phone")
+    employee_phone2 = data.get("employee_phone2")
+    employee_authority = data.get("employee_authority")
+    employee_authority_phone = data.get("employee_authority_phone")
+    employee_authority_phone2 = data.get("employee_authority_phone2")
+    employee_adress = data.get("employee_adress")
+    
+    try:
+        execute_query(UPDATE_QUERY_EMPLOYEE,params=(employee_phone,employee_phone2,employee_authority,employee_authority_phone,
+                                                             employee_authority_phone2,employee_adress,employee_id),commit=True)
+        return jsonify({"Bilgi":"Müşteri Bilgileri Başarıyla Güncellendi"}),201
+    
+    except Exception as e:
+        return jsonify({"Hata":f"Sunucu Hatası: {str(e)}"})
+

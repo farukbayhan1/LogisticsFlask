@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from dbmanager.query.driverquery import CHECK_QUERY_DRIVER, ADD_QUERY_DRIVER, GET_QUERY_ALL_DRIVERS
+from dbmanager.query.driverquery import CHECK_QUERY_DRIVER, ADD_QUERY_DRIVER, GET_QUERY_ALL_DRIVERS, UPDATE_QUERY_DRIVER
 from dbmanager.excutequery import execute_query
 
 driver_bp = Blueprint('driver',__name__,url_prefix='/driver')
@@ -52,3 +52,21 @@ def get_drivers():
         return jsonify(driver_list),200
     except Exception as e:
         return jsonify({"Hata":f"Sunucu Hatası: {str(e)}"}), 500
+
+@driver_bp.route('',methods=['PUT'])
+def update_driver():
+    data = request.get_json()
+    driver_id = data.get("driver_id")
+    driver_name = data.get("driver_name")
+    driver_surname = data.get("driver_surname")
+    driver_phone = data.get("driver_phone")
+    driver_adress = data.get("driver_adress")
+
+    if not all([driver_name,driver_surname,driver_phone]):
+        return jsonify({"Hata":"Sürücü İsim Soyisim ve Telefon Zorunludur"})
+    else:
+        try:
+            execute_query(UPDATE_QUERY_DRIVER,params=(driver_name,driver_surname,driver_phone,driver_adress,driver_id),commit=True)
+            return jsonify({"Bilgi":"Sürücü Bilgileri Güncellendi"}),201
+        except Exception as e:
+            return jsonify({"Hata":f"Sunucu Hatası {str(e)}"}),500

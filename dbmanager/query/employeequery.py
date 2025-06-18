@@ -26,6 +26,7 @@ ADD_QUERY_EMPLOYEE = ("""
 
 GET_QUERY_ALL_EMPLOYEES = (""" 
         SELECT
+            e."employeeId",
             e."employeeName",
             e."employeePhone",
             e."employeePhone2",
@@ -40,4 +41,11 @@ GET_QUERY_ALL_EMPLOYEES = ("""
             "tbUser" u
         ON
             e."_userId" = u."userId" 
+""")
+
+UPDATE_QUERY_EMPLOYEE = (""" 
+        UPDATE "tbEmployee"
+        SET  "employeePhone" = %s, "employeePhone2" = %s, "employeeAuthority" = %s, "employeeAuthorityPhone" = %s,
+            "employeeAuthorityPhone2" = %s, "employeeAdress" = %s
+        WHERE "employeeId" = %s
 """)

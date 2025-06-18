@@ -41,3 +41,10 @@ GET_QUERY_ALL_DRIVERS = ("""
         ON
             dr."_userId" = u."userId"
 """)
+
+UPDATE_QUERY_DRIVER = (""" 
+        UPDATE "tbDriver"
+        SET "driverName" = %s, "driverSurname" = %s, "driverPhone" = %s, "driverAdress" = %s
+        WHERE "driverId" = %s
+""")
+

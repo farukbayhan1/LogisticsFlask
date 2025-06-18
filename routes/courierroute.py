@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from dbmanager.excutequery import execute_query
-from dbmanager.query.courierquery import CHECK_QUERY_COURIER, ADD_QUERY_COURIER, GET_QUERY_ALL_COURIERS
+from dbmanager.query.courierquery import CHECK_QUERY_COURIER, ADD_QUERY_COURIER, GET_QUERY_ALL_COURIERS, UPDATE_QUERY_COURIERS
 
 couerier_bp = Blueprint('courier',__name__,url_prefix='/courier')
 
@@ -52,4 +52,24 @@ def get_couriers():
             })
         return jsonify(courier_list),200   
     except Exception as e:
-        return jsonify({"Hata":f"Sunucu Hatası: {str(e)}"})
+        return jsonify({"Hata":f"Sunucu Hatası: {str(e)}"}),500
+    
+@couerier_bp.route('',methods=['PUT'])
+def update_courier():
+    data = request.get_json()
+    courier_id = data.get("courier_id")
+    courier_name = data.get("courier_name")
+    courier_surname = data.get("courier_surname")
+    courier_phone = data.get("courier_phone")
+    courier_adress = data.get("courier_adress")
+    print(data)
+    # Check Fields
+    if not all([courier_id,courier_name,courier_surname,courier_phone]):
+        return jsonify({"Hata":"Kurye Adı Soyadı ve Telefon Zorunlu Alandır"}),400
+    else:
+        try:
+            execute_query(UPDATE_QUERY_COURIERS,params=(courier_name,courier_surname,courier_phone,courier_adress,courier_id),commit=True)
+            return jsonify({"Bilgi":"Kurye Bilgileri Başarıyla Güncellendi"}),201
+        except Exception as e:
+            print(str(e))
+            return jsonify({"Hata":f"Sunucu Hatası: {str(e)}"}),500

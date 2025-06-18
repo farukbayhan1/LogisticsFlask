@@ -41,3 +41,9 @@ GET_QUERY_ALL_COURIERS = ("""
         ON
             cr."_userId" = u."userId"
 """)
+
+UPDATE_QUERY_COURIERS = (""" 
+        UPDATE "tbCourier"
+        SET "courierName" = %s, "courierSurname" = %s, "courierPhone" = %s, "courierAdress" = %s
+        WHERE "courierId" = %s
+""")

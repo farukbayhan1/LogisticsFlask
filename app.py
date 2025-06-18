@@ -6,6 +6,7 @@ from routes.courierroute import couerier_bp
 from routes.employeeroute import employee_bp
 from routes.vehicleroute import vehicle_bp
 from routes.triproute import trip_bp
+from routes.orderroute import order_bp
 #from routes.tripstatusroute import tripstatus_bp
 
 
@@ -18,7 +19,7 @@ app.register_blueprint(couerier_bp)
 app.register_blueprint(employee_bp)
 app.register_blueprint(vehicle_bp)
 app.register_blueprint(trip_bp)
-#app.register_blueprint(tripstatus_bp)
+app.register_blueprint(order_bp)
 
 
 if __name__ == '__main__':
